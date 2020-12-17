@@ -15,6 +15,7 @@ export class Client {
   id: string;
   mount: Mount;
   stream: RtspStream;
+  baseTime?: number;
 
   remoteAddress: string;
   remoteRtcpPort: number;
@@ -119,6 +120,7 @@ export class Client {
    */
   play(): void {
     this.stream.clients[this.id] = this;
+    this.baseTime = Date.now();
   }
 
   /**
@@ -157,8 +159,9 @@ export class Client {
    * @param buf
    */
   sendRtp(buf: Buffer) {
+    const millis = Date.now() - (this.baseTime as number);
     const rtp = Parser.parseRtpPacket(buf);
-    console.log(`rtp : ${rtp}`);
+    console.log(`time: ${millis}, rtp : ${rtp}`);
     // console.log(`ssrc : ${rtp.ssrc}`);
     // const bKeyframe = Parser.isKeyframeStart(rtp.payload);
     // console.log(`key frame : ${bKeyframe}`);
