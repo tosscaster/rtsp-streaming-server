@@ -2,15 +2,26 @@ declare module 'rtsp-server' {
   import { EventEmitter } from 'events';
   import { Socket } from 'net';
 
-  export type RtspRequestMethod = 'DESCRIBE' | 'ANNOUNCE' | 'GET_PARAMETER' | 'OPTIONS' | 'PAUSE' | 'PLAY' | 'RECORD' | 'REDIRECT' | 'SETUP' | 'SET_PARAMETER' | 'TEARDOWN';
-  
+  export type RtspRequestMethod =
+    | 'DESCRIBE'
+    | 'ANNOUNCE'
+    | 'GET_PARAMETER'
+    | 'OPTIONS'
+    | 'PAUSE'
+    | 'PLAY'
+    | 'RECORD'
+    | 'REDIRECT'
+    | 'SETUP'
+    | 'SET_PARAMETER'
+    | 'TEARDOWN';
+
   export interface RtspRequest {
     method: RtspRequestMethod;
     headers: {
       [key: string]: string | undefined;
       authorization?: string;
       session?: string;
-    }
+    };
     url: string;
     uri: string;
     on(event: 'data', callback: (buffer: Buffer) => void): void;
@@ -37,5 +48,4 @@ declare module 'rtsp-server' {
   }
 
   export function createServer(requestListener: RtspRequestFn): RtspServer;
-
 }

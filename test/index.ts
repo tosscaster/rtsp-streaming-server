@@ -8,17 +8,17 @@ const server = new RtspServer({
   clientServerHooks: {
     authentication: authHook,
     checkMount,
-    clientClose
+    clientClose,
   },
 
   publishServerHooks: {
     authentication: authHook,
-    checkMount
+    checkMount,
   },
-  serverPort: 5554
+  serverPort: 5554,
 });
 
-async function run (): Promise<void> {
+async function run(): Promise<void> {
   try {
     await server.start();
   } catch (e) {
@@ -26,13 +26,13 @@ async function run (): Promise<void> {
   }
 }
 
-async function authHook (username: string, password: string): Promise<boolean> {
+async function authHook(username: string, password: string): Promise<boolean> {
   if (username === 'test' && password === 'test') return true;
 
   return false;
 }
 
-async function checkMount (req: any): Promise<boolean> {
+async function checkMount(req: any): Promise<boolean> {
   const url = new URL(req.uri);
   if (url.pathname === '/test/1') {
     return true;
@@ -41,7 +41,7 @@ async function checkMount (req: any): Promise<boolean> {
   return false;
 }
 
-async function clientClose (mount: Mount): Promise<void> {
+async function clientClose(mount: Mount): Promise<void> {
   console.log(mount.streams);
 }
 

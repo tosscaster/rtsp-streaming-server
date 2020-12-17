@@ -23,7 +23,7 @@ export class Mount {
   mounts: Mounts;
   path: string;
   streams: {
-    [streamId: number]: RtspStream // This is the RTSP streamId Number, not a UUID
+    [streamId: number]: RtspStream; // This is the RTSP streamId Number, not a UUID
   };
 
   sdp: string;
@@ -31,7 +31,12 @@ export class Mount {
 
   hooks?: PublishServerHooksConfig;
 
-  constructor (mounts: Mounts, path: string, sdpBody: string, hooks?: PublishServerHooksConfig) {
+  constructor(
+    mounts: Mounts,
+    path: string,
+    sdpBody: string,
+    hooks?: PublishServerHooksConfig,
+  ) {
     this.id = uuid();
     this.mounts = mounts;
     this.path = path;
@@ -44,7 +49,7 @@ export class Mount {
     debug('Set up mount at path %s', path);
   }
 
-  createStream (uri: string) {
+  createStream(uri: string) {
     const info = getMountInfo(uri);
 
     const nextPort = this.mounts.getNextRtpPort();
@@ -60,14 +65,13 @@ export class Mount {
       id: info.streamId,
       mount: this,
       rtpEndPort: nextPort + 1, // RTCP
-      rtpStartPort: nextPort // RTP
+      rtpStartPort: nextPort, // RTP
     };
 
     return this.streams[info.streamId];
-
   }
 
-  async setup (): Promise<void> {
+  async setup(): Promise<void> {
     let portError = false;
 
     for (let id in this.streams) {
@@ -82,7 +86,9 @@ export class Mount {
       } catch (e) {
         // One or two of the ports was in use, cycle them out and try another
         if (e.errno && e.errno === 'EADDRINUSE') {
-          console.warn(`Port error on ${e.port}, for stream ${stream.id} using another port`);
+          console.warn(
+            `Port error on ${e.port}, for stream ${stream.id} using another port`,
+          );
           portError = true;
 
           try {
@@ -113,7 +119,7 @@ export class Mount {
     }
   }
 
-  close () {
+  close() {
     let ports = [];
 
     for (let id in this.streams) {
@@ -135,7 +141,7 @@ export class Mount {
     return ports;
   }
 
-  clientLeave (client: Client) {
+  clientLeave(client: Client) {
     delete this.streams[client.stream.id].clients[client.id];
     let empty: boolean = true;
     for (let stream in this.streams) {

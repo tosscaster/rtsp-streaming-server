@@ -11,10 +11,10 @@ export class RtpUdp {
   server: Socket;
   type: 'rtp' | 'rtcp';
 
-  constructor (port: number, stream: RtspStream) {
+  constructor(port: number, stream: RtspStream) {
     this.port = port;
     this.stream = stream;
-    this.type = (port % 2) ? 'rtcp' : 'rtp';
+    this.type = port % 2 ? 'rtcp' : 'rtp';
 
     this.server = createSocket('udp4');
     this.server.on('message', (buf: Buffer) => {
@@ -31,23 +31,28 @@ export class RtpUdp {
     });
   }
 
-  async listen (): Promise<void> {
+  async listen(): Promise<void> {
     return new Promise((resolve, reject) => {
-      function onError (err: Error) {
+      function onError(err: Error) {
         return reject(err);
       }
 
       this.server.on('error', onError);
 
       this.server.bind(this.port, () => {
-        debug('Opened %s listener for stream %s on path %s', this.type.toUpperCase(), this.stream.id, this.stream.mount.path);
+        debug(
+          'Opened %s listener for stream %s on path %s',
+          this.type.toUpperCase(),
+          this.stream.id,
+          this.stream.mount.path,
+        );
         this.server.removeListener('error', onError);
         return resolve();
       });
     });
   }
 
-  async close () {
+  async close(): Promise<void> {
     return new Promise((resolve, reject) => {
       debug('Closing UDP listeners for stream %s', this.stream.id);
       this.server.close(() => {

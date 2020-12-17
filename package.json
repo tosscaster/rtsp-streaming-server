@@ -6,7 +6,7 @@
   "scripts": {
     "prepare": "npm run build",
     "build": "npm run type-check && npm run build:js",
-    "build:js": "babel src --out-dir build --extensions '.ts' --source-maps inline",
+    "build:js": "babel src --out-dir build --extensions \".ts\" --source-maps inline",
     "coverage": "jest --coverage --env=node",
     "lint": "tslint --project tsconfig.json",
     "start": "nodemon",
@@ -22,27 +22,28 @@
   "dependencies": {
     "@penggy/easy-rtp-parser": "^1.0.2",
     "basic-auth": "^2.0.1",
-    "debug": "^4.1.1",
+    "debug": "^4.3.1",
     "rtsp-server": "^1.2.2",
-    "uuid": "^3.3.3",
-    "winston": "^2.4.4"
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/node": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "@babel/preset-typescript": "^7.3.3",
-    "@types/basic-auth": "^1.1.2",
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
+    "@babel/node": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-typescript": "^7.12.7",
+    "@types/basic-auth": "^1.1.3",
     "@types/debug": "^4.1.5",
-    "@types/node": "^11.13.19",
-    "@types/uuid": "^3.4.5",
-    "lint-staged": "^8.2.1",
-    "nodemon": "^1.19.1",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.19.0",
-    "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.5.3"
+    "@types/node": "^14.14.14",
+    "@types/uuid": "^8.3.0",
+    "lint-staged": "^10.5.3",
+    "nodemon": "^2.0.6",
+    "prettier": "^2.2.1",
+    "ts-node": "^9.1.1",
+    "tslint": "^5.20.1",
+    "tslint-config-standard": "^9.0.0",
+    "typescript": "^4.1.3"
   },
   "engines": {
     "node": ">=10.0.0"
@@ -50,6 +51,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/chriswiggins/rtsp-streaming-server.git"
-  },
-  "types": "build/index.d.ts"
+  }
 }

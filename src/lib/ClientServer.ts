@@ -1,5 +1,10 @@
 import { parse } from 'basic-auth';
-import { createServer, RtspRequest, RtspResponse, RtspServer } from 'rtsp-server';
+import {
+  createServer,
+  RtspRequest,
+  RtspResponse,
+  RtspServer,
+} from 'rtsp-server';
 
 import { ClientWrapper } from './ClientWrapper';
 import { Mount } from './Mount';
@@ -9,7 +14,12 @@ import { getDebugger } from './utils';
 const debug = getDebugger('ClientServer');
 
 export interface ClientServerHooksConfig {
-  authentication?: (username: string, password: string, req: RtspRequest, res: RtspResponse) => Promise<boolean>;
+  authentication?: (
+    username: string,
+    password: string,
+    req: RtspRequest,
+    res: RtspResponse,
+  ) => Promise<boolean>;
   checkMount?: (req: RtspRequest) => Promise<boolean | number>;
   clientClose?: (mount: Mount) => Promise<void>;
 }
@@ -30,18 +40,27 @@ export class ClientServer {
    * @param rtspPort
    * @param mounts
    */
-  constructor (rtspPort: number, mounts: Mounts, hooks?: ClientServerHooksConfig) {
+  constructor(
+    rtspPort: number,
+    mounts: Mounts,
+    hooks?: ClientServerHooksConfig,
+  ) {
     this.rtspPort = rtspPort;
     this.mounts = mounts;
 
     this.clients = {};
 
     this.hooks = {
-      ...hooks
+      ...hooks,
     };
 
     this.server = createServer((req: RtspRequest, res: RtspResponse) => {
-      debug('%s:%s request: %s', req.socket.remoteAddress, req.socket.remotePort, req.method);
+      debug(
+        '%s:%s request: %s',
+        req.socket.remoteAddress,
+        req.socket.remotePort,
+        req.method,
+      );
       switch (req.method) {
         case 'DESCRIBE':
           return this.describeRequest(req, res);
@@ -54,14 +73,17 @@ export class ClientServer {
         case 'TEARDOWN':
           return this.teardownRequest(req, res);
         default:
-          console.error('Unknown ClientServer request', { method: req.method, url: req.url });
+          console.error('Unknown ClientServer request', {
+            method: req.method,
+            url: req.url,
+          });
           res.statusCode = 501; // Not implemented
           return res.end();
       }
     });
   }
 
-  async start (): Promise<void> {
+  async start(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.server.listen(this.rtspPort, () => {
         debug('Now listening on %s', this.rtspPort);
@@ -76,9 +98,9 @@ export class ClientServer {
    * @param req
    * @param res
    */
-  async optionsRequest (req: RtspRequest, res: RtspResponse): Promise<void> {
+  async optionsRequest(req: RtspRequest, res: RtspResponse): Promise<void> {
     // Update the client timeout if they provide a session
-    if (req.headers.session && await this.checkAuthenticated(req, res)) {
+    if (req.headers.session && (await this.checkAuthenticated(req, res))) {
       const client = this.clients[req.headers.session];
       if (client) {
         client.keepalive();
@@ -97,8 +119,8 @@ export class ClientServer {
    * @param req
    * @param res
    */
-  async describeRequest (req: RtspRequest, res: RtspResponse): Promise<void> {
-    if (!await this.checkAuthenticated(req, res)) {
+  async describeRequest(req: RtspRequest, res: RtspResponse): Promise<void> {
+    if (!(await this.checkAuthenticated(req, res))) {
       return res.end();
     }
 
@@ -107,7 +129,13 @@ export class ClientServer {
     if (this.hooks.checkMount) {
       const allowed = await this.hooks.checkMount(req);
       if (!allowed || typeof allowed === 'number') {
-        debug('%s:%s path not allowed by hook - hook returned: %s', req.socket.remoteAddress, req.socket.remotePort, req.uri, allowed);
+        debug(
+          '%s:%s path not allowed by hook - hook returned: %s',
+          req.socket.remoteAddress,
+          req.socket.remotePort,
+          req.uri,
+          allowed,
+        );
         if (typeof allowed === 'number') {
           res.statusCode = allowed;
         } else {
@@ -121,7 +149,12 @@ export class ClientServer {
     const mount = this.mounts.getMount(req.uri);
 
     if (!mount) {
-      debug('%s:%s - Mount not found, sending 404: %o', req.socket.remoteAddress, req.socket.remotePort, req.uri);
+      debug(
+        '%s:%s - Mount not found, sending 404: %o',
+        req.socket.remoteAddress,
+        req.socket.remotePort,
+        req.uri,
+      );
       res.statusCode = 404;
       return res.end();
     }
@@ -138,14 +171,22 @@ export class ClientServer {
    * @param req
    * @param res
    */
-  async setupRequest (req: RtspRequest, res: RtspResponse): Promise<void> {
-    if (!await this.checkAuthenticated(req, res)) {
+  async setupRequest(req: RtspRequest, res: RtspResponse): Promise<void> {
+    if (!(await this.checkAuthenticated(req, res))) {
       return res.end();
     }
 
     // TCP not supported (yet ;-))
-    if (req.headers.transport && req.headers.transport.toLowerCase().indexOf('tcp') > -1) {
-      debug('%s:%s - we dont support tcp, sending 504: %o', req.socket.remoteAddress, req.socket.remotePort, req.uri);
+    if (
+      req.headers.transport &&
+      req.headers.transport.toLowerCase().indexOf('tcp') > -1
+    ) {
+      debug(
+        '%s:%s - we dont support tcp, sending 504: %o',
+        req.socket.remoteAddress,
+        req.socket.remotePort,
+        req.uri,
+      );
       res.statusCode = 504;
       return res.end();
     }
@@ -172,7 +213,10 @@ export class ClientServer {
       return res.end();
     }
 
-    res.setHeader('Transport', `${req.headers.transport};server_port=${client.rtpServerPort}-${client.rtcpServerPort}`);
+    res.setHeader(
+      'Transport',
+      `${req.headers.transport};server_port=${client.rtpServerPort}-${client.rtcpServerPort}`,
+    );
 
     res.end();
   }
@@ -182,13 +226,19 @@ export class ClientServer {
    * @param req
    * @param res
    */
-  async playRequest (req: RtspRequest, res: RtspResponse): Promise<void> {
-    if (!await this.checkAuthenticated(req, res)) {
+  async playRequest(req: RtspRequest, res: RtspResponse): Promise<void> {
+    if (!(await this.checkAuthenticated(req, res))) {
       return res.end();
     }
 
     if (!req.headers.session || !this.clients[req.headers.session]) {
-      debug('%s:%s - session not valid (%s), sending 454: %o', req.socket.remoteAddress, req.socket.remotePort, req.headers.session, req.uri);
+      debug(
+        '%s:%s - session not valid (%s), sending 454: %o',
+        req.socket.remoteAddress,
+        req.socket.remotePort,
+        req.headers.session,
+        req.uri,
+      );
       res.statusCode = 454; // Session not valid
       return res.end();
     }
@@ -209,18 +259,28 @@ export class ClientServer {
    * @param req
    * @param res
    */
-  async teardownRequest (req: RtspRequest, res: RtspResponse): Promise<void> {
-    if (!await this.checkAuthenticated(req, res)) {
+  async teardownRequest(req: RtspRequest, res: RtspResponse): Promise<void> {
+    if (!(await this.checkAuthenticated(req, res))) {
       return res.end();
     }
 
     if (!req.headers.session || !this.clients[req.headers.session]) {
-      debug('%s:%s - session not valid (%s), sending 454: %o', req.socket.remoteAddress, req.socket.remotePort, req.headers.session, req.uri);
+      debug(
+        '%s:%s - session not valid (%s), sending 454: %o',
+        req.socket.remoteAddress,
+        req.socket.remotePort,
+        req.headers.session,
+        req.uri,
+      );
       res.statusCode = 454;
       return res.end();
     }
 
-    debug('%s:%s tearing down client', req.socket.remoteAddress, req.socket.remotePort);
+    debug(
+      '%s:%s tearing down client',
+      req.socket.remoteAddress,
+      req.socket.remotePort,
+    );
     const client = this.clients[req.headers.session];
     client.close();
 
@@ -231,7 +291,7 @@ export class ClientServer {
    *
    * @param clientId
    */
-  async clientGone (clientId: string): Promise<void> {
+  async clientGone(clientId: string): Promise<void> {
     if (this.hooks.clientClose) {
       await this.hooks.clientClose(this.clients[clientId].mount);
     }
@@ -246,17 +306,33 @@ export class ClientServer {
    * @param req
    * @param res
    */
-  private async checkAuthenticated (req: RtspRequest, res: RtspResponse): Promise<boolean> {
+  private async checkAuthenticated(
+    req: RtspRequest,
+    res: RtspResponse,
+  ): Promise<boolean> {
     // Ask for authentication
     if (this.hooks.authentication) {
       if (!req.headers.authorization) {
-        debug('%s:%s - No authentication information (required), sending 401', req.socket.remoteAddress, req.socket.remotePort);
+        debug(
+          '%s:%s - No authentication information (required), sending 401',
+          req.socket.remoteAddress,
+          req.socket.remotePort,
+        );
         res.setHeader('WWW-Authenticate', 'Basic realm="rtsp"');
         res.statusCode = 401;
         return false;
       } else {
-        if (req.headers.session && this.clients[req.headers.session] && this.clients[req.headers.session].authorizationHeader !== req.headers.authorization) {
-          debug('%s:%s - session header doesn\'t match the cached value, sending 401', req.socket.remoteAddress, req.socket.remotePort);
+        if (
+          req.headers.session &&
+          this.clients[req.headers.session] &&
+          this.clients[req.headers.session].authorizationHeader !==
+            req.headers.authorization
+        ) {
+          debug(
+            "%s:%s - session header doesn't match the cached value, sending 401",
+            req.socket.remoteAddress,
+            req.socket.remotePort,
+          );
           res.setHeader('WWW-Authenticate', 'Basic realm="rtsp"');
           res.statusCode = 401;
           return false;
@@ -264,15 +340,28 @@ export class ClientServer {
 
         const result = parse(req.headers.authorization);
         if (!result) {
-          debug('%s:%s - No authentication information (required), sending 401', req.socket.remoteAddress, req.socket.remotePort);
+          debug(
+            '%s:%s - No authentication information (required), sending 401',
+            req.socket.remoteAddress,
+            req.socket.remotePort,
+          );
           res.setHeader('WWW-Authenticate', 'Basic realm="rtsp"');
           res.statusCode = 401;
           return false;
         }
 
-        const allowed = await this.hooks.authentication(result.name, result.pass, req, res);
+        const allowed = await this.hooks.authentication(
+          result.name,
+          result.pass,
+          req,
+          res,
+        );
         if (!allowed) {
-          debug('%s:%s - No authentication information (hook returned false), sending 401', req.socket.remoteAddress, req.socket.remotePort);
+          debug(
+            '%s:%s - No authentication information (hook returned false), sending 401',
+            req.socket.remoteAddress,
+            req.socket.remotePort,
+          );
           res.setHeader('WWW-Authenticate', 'Basic realm="rtsp"');
           res.statusCode = 401;
           return false;

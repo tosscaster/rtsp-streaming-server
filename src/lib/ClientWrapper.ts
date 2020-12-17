@@ -22,7 +22,7 @@ export class ClientWrapper {
 
   authorizationHeader: string;
 
-  constructor (clientServer: ClientServer, req: RtspRequest) {
+  constructor(clientServer: ClientServer, req: RtspRequest) {
     this.id = uuid();
     this.clientServer = clientServer;
     this.clients = {};
@@ -45,7 +45,7 @@ export class ClientWrapper {
    * @param mounts
    * @param req
    */
-  addClient (req: RtspRequest): Client {
+  addClient(req: RtspRequest): Client {
     const client = new Client(this.mount, req);
 
     // Some clients for whatever reason don't send RTSP keepalive requests
@@ -64,7 +64,7 @@ export class ClientWrapper {
   /**
    *
    */
-  play (): void {
+  play(): void {
     for (let client in this.clients) {
       this.clients[client].play();
     }
@@ -75,7 +75,7 @@ export class ClientWrapper {
   /**
    *
    */
-  close (): void {
+  close(): void {
     if (this.keepaliveTimeout) {
       clearTimeout(this.keepaliveTimeout);
     }
@@ -90,7 +90,7 @@ export class ClientWrapper {
   /**
    *
    */
-  keepalive (): void {
+  keepalive(): void {
     if (this.keepaliveTimeout) {
       clearTimeout(this.keepaliveTimeout);
     }
@@ -104,5 +104,4 @@ export class ClientWrapper {
       }
     }, 6e4); // 60 seconds (double the normal keepalive interval)
   }
-
 }

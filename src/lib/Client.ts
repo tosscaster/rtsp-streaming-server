@@ -1,12 +1,12 @@
-import { createSocket, Socket } from "dgram";
-import { RtspRequest } from "rtsp-server";
-import { v4 as uuid } from "uuid";
-import Parser from "@penggy/easy-rtp-parser";
+import { createSocket, Socket } from 'dgram';
+import { RtspRequest } from 'rtsp-server';
+import { v4 as uuid } from 'uuid';
+import Parser from '@penggy/easy-rtp-parser';
 
-import { Mount, RtspStream } from "./Mount";
-import { getDebugger, getMountInfo } from "./utils";
+import { Mount, RtspStream } from './Mount';
+import { getDebugger, getMountInfo } from './utils';
 
-const debug = getDebugger("Client");
+const debug = getDebugger('Client');
 
 const clientPortRegex = /(?:client_port=)(\d*)-(\d*)/;
 
@@ -33,25 +33,25 @@ export class Client {
     this.mount = mount;
 
     if (this.mount.path !== info.path) {
-      throw new Error("Mount does not equal request provided");
+      throw new Error('Mount does not equal request provided');
     }
 
     this.stream = this.mount.streams[info.streamId];
 
     if (!req.socket.remoteAddress || !req.headers.transport) {
       throw new Error(
-        "No remote address found or transport header doesn't exist"
+        "No remote address found or transport header doesn't exist",
       );
     }
 
     const portMatch: RegExpMatchArray | null = req.headers.transport.match(
-      clientPortRegex
+      clientPortRegex,
     );
 
-    this.remoteAddress = req.socket.remoteAddress.replace("::ffff:", ""); // Strip IPv6 thing out
+    this.remoteAddress = req.socket.remoteAddress.replace('::ffff:', ''); // Strip IPv6 thing out
 
     if (!portMatch) {
-      throw new Error("Unable to find client ports in transport header");
+      throw new Error('Unable to find client ports in transport header');
     }
 
     this.remoteRtpPort = parseInt(portMatch[1], 10);
@@ -59,8 +59,8 @@ export class Client {
 
     this.setupServerPorts();
 
-    this.rtpServer = createSocket("udp4");
-    this.rtcpServer = createSocket("udp4");
+    this.rtpServer = createSocket('udp4');
+    this.rtcpServer = createSocket('udp4');
   }
 
   /**
@@ -74,9 +74,9 @@ export class Client {
       await this.listen();
     } catch (e) {
       // One or two of the ports was in use, cycle them out and try another
-      if (e.errno && e.errno === "EADDRINUSE") {
+      if (e.errno && e.errno === 'EADDRINUSE') {
         console.warn(
-          `Port error on ${e.port}, for stream ${this.stream.id} using another port`
+          `Port error on ${e.port}, for stream ${this.stream.id} using another port`,
         );
         portError = true;
 
@@ -103,14 +103,14 @@ export class Client {
     }
 
     debug(
-      "%s:%s Client set up for path %s, local ports (%s:%s) remote ports (%s:%s)",
+      '%s:%s Client set up for path %s, local ports (%s:%s) remote ports (%s:%s)',
       req.socket.remoteAddress,
       req.socket.remotePort,
       this.stream.mount.path,
       this.rtpServerPort,
       this.rtcpServerPort,
       this.remoteRtpPort,
-      this.remoteRtcpPort
+      this.remoteRtcpPort,
     );
   }
 
@@ -133,12 +133,12 @@ export class Client {
       try {
         this.rtpServer.close();
       } catch (e) {
-        debug("Error closing rtpServer for client %o", e);
+        debug('Error closing rtpServer for client %o', e);
       }
       try {
         this.rtcpServer.close();
       } catch (e) {
-        debug("Error closing rtcpServer for client %o", e);
+        debug('Error closing rtcpServer for client %o', e);
       }
 
       if (this.rtpServerPort) {
@@ -186,14 +186,14 @@ export class Client {
         return reject(err);
       }
 
-      this.rtpServer.on("error", onError);
+      this.rtpServer.on('error', onError);
 
       this.rtpServer.bind(this.rtpServerPort, () => {
-        this.rtpServer.removeListener("error", onError);
+        this.rtpServer.removeListener('error', onError);
 
-        this.rtcpServer.on("error", onError);
+        this.rtcpServer.on('error', onError);
         this.rtcpServer.bind(this.rtcpServerPort, () => {
-          this.rtcpServer.removeListener("error", onError);
+          this.rtcpServer.removeListener('error', onError);
 
           return resolve();
         });
@@ -204,7 +204,7 @@ export class Client {
   private setupServerPorts(): void {
     const rtpServerPort = this.mount.mounts.getNextRtpPort();
     if (!rtpServerPort) {
-      throw new Error("Unable to get next RTP Server Port");
+      throw new Error('Unable to get next RTP Server Port');
     }
 
     this.rtpServerPort = rtpServerPort;
