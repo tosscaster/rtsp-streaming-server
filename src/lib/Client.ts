@@ -1,7 +1,7 @@
 import { createSocket, Socket } from "dgram";
 import { RtspRequest } from "rtsp-server";
 import { v4 as uuid } from "uuid";
-import { Parser } from "@penggy/easy-rtp-parser";
+import Parser from "@penggy/easy-rtp-parser";
 
 import { Mount, RtspStream } from "./Mount";
 import { getDebugger, getMountInfo } from "./utils";
