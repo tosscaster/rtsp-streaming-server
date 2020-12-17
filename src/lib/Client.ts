@@ -15,14 +15,15 @@ export class Client {
   id: string;
   mount: Mount;
   stream: RtspStream;
-  baseTime?: number;
 
   remoteAddress: string;
   remoteRtcpPort: number;
   remoteRtpPort: number;
 
   rtpServer: Socket;
+  rtpList: Buffer[] = [];
   rtcpServer: Socket;
+  rtcpList: Buffer[] = [];
   rtpServerPort?: number;
   rtcpServerPort?: number;
 
@@ -120,7 +121,6 @@ export class Client {
    */
   play(): void {
     this.stream.clients[this.id] = this;
-    this.baseTime = Date.now();
   }
 
   /**
@@ -159,15 +159,14 @@ export class Client {
    * @param buf
    */
   sendRtp(buf: Buffer) {
-    const millis = Date.now() - (this.baseTime as number);
-    const rtp = Parser.parseRtpPacket(buf);
-    console.log(`time: ${millis}, rtp : ${JSON.stringify(rtp)}`);
-    // console.log(`ssrc : ${rtp.ssrc}`);
-    // const bKeyframe = Parser.isKeyframeStart(rtp.payload);
-    // console.log(`key frame : ${bKeyframe}`);
-    const writen = buf.writeUInt32BE(millis, 4); // update time stamp
+    this.rtpList.push(buf);
+    if (this.rtpList.length > 5) {
+      this.rtpList.shift() as Buffer;
+    }
     if (this.open === true) {
-      this.rtpServer.send(buf, this.remoteRtpPort, this.remoteAddress);
+      this.rtpList.forEach((packet) => {
+        this.rtpServer.send(packet, this.remoteRtpPort, this.remoteAddress);
+      });
     }
   }
 
@@ -176,8 +175,14 @@ export class Client {
    * @param buf
    */
   sendRtcp(buf: Buffer) {
+    this.rtcpList.push(buf);
+    if (this.rtcpList.length > 5) {
+      this.rtcpList.shift() as Buffer;
+    }
     if (this.open === true) {
-      this.rtcpServer.send(buf, this.remoteRtcpPort, this.remoteAddress);
+      this.rtcpList.forEach((packet) => {
+        this.rtcpServer.send(packet, this.remoteRtcpPort, this.remoteAddress);
+      });
     }
   }
 
