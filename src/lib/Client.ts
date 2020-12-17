@@ -158,9 +158,10 @@ export class Client {
    */
   sendRtp(buf: Buffer) {
     const rtp = Parser.parseRtpPacket(buf);
-    console.log(`ssrc : ${rtp.ssrc}`);
-    const bKeyframe = Parser.isKeyframeStart(rtp.payload);
-    console.log(`key frame : ${bKeyframe}`);
+    console.log(`rtp : ${rtp}`);
+    // console.log(`ssrc : ${rtp.ssrc}`);
+    // const bKeyframe = Parser.isKeyframeStart(rtp.payload);
+    // console.log(`key frame : ${bKeyframe}`);
 
     if (this.open === true) {
       this.rtpServer.send(buf, this.remoteRtpPort, this.remoteAddress);
