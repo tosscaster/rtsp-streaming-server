@@ -161,7 +161,7 @@ export class Client {
   sendRtp(buf: Buffer) {
     const millis = Date.now() - (this.baseTime as number);
     const rtp = Parser.parseRtpPacket(buf);
-    console.log(`time: ${millis}, rtp : ${rtp}`);
+    console.log(`time: ${millis}, rtp : ${JSON.stringify(rtp)}`);
     // console.log(`ssrc : ${rtp.ssrc}`);
     // const bKeyframe = Parser.isKeyframeStart(rtp.payload);
     // console.log(`key frame : ${bKeyframe}`);
