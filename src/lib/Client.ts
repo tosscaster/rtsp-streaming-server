@@ -161,12 +161,13 @@ export class Client {
   sendRtp(buf: Buffer) {
     this.rtpList.push(buf);
     if (this.rtpList.length > 5) {
-      this.rtpList.shift() as Buffer;
+      this.rtpList.shift();
     }
     if (this.open === true) {
-      this.rtpList.forEach((packet) => {
-        this.rtpServer.send(packet, this.remoteRtpPort, this.remoteAddress);
-      });
+      let pkt;
+      while ((pkt = this.rtpList.shift()) !== undefined) {
+        this.rtpServer.send(pkt, this.remoteRtpPort, this.remoteAddress);
+      }
     }
   }
 
@@ -177,12 +178,13 @@ export class Client {
   sendRtcp(buf: Buffer) {
     this.rtcpList.push(buf);
     if (this.rtcpList.length > 5) {
-      this.rtcpList.shift() as Buffer;
+      this.rtcpList.shift();
     }
     if (this.open === true) {
-      this.rtcpList.forEach((packet) => {
-        this.rtcpServer.send(packet, this.remoteRtcpPort, this.remoteAddress);
-      });
+      let pkt;
+      while ((pkt = this.rtcpList.shift()) !== undefined) {
+        this.rtcpServer.send(pkt, this.remoteRtcpPort, this.remoteAddress);
+      }
     }
   }
 
