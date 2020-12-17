@@ -20,6 +20,7 @@
   "author": "Chris Wiggins <chris@wiggins.nz>",
   "license": "GPL-3.0",
   "dependencies": {
+    "@penggy/easy-rtp-parser": "^1.0.2",
     "basic-auth": "^2.0.1",
     "debug": "^4.1.1",
     "rtsp-server": "^1.2.2",
