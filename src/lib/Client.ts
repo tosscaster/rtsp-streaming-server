@@ -165,7 +165,7 @@ export class Client {
     // console.log(`ssrc : ${rtp.ssrc}`);
     // const bKeyframe = Parser.isKeyframeStart(rtp.payload);
     // console.log(`key frame : ${bKeyframe}`);
-
+    const writen = buf.writeUInt32BE(millis, 4); // update time stamp
     if (this.open === true) {
       this.rtpServer.send(buf, this.remoteRtpPort, this.remoteAddress);
     }
